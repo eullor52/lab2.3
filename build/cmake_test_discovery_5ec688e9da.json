@@ -1,0 +1,98 @@
+{
+  "tests": 16,
+  "name": "AllTests",
+  "testsuites": [
+    {
+      "name": "FragmentFixture",
+      "tests": 3,
+      "testsuite": [
+        {
+          "name": "default_constructor",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_fragment.cpp",
+          "line": 7
+        },
+        {
+          "name": "parameters_constructor",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_fragment.cpp",
+          "line": 19
+        },
+        {
+          "name": "get_end_begin",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_fragment.cpp",
+          "line": 31
+        }
+      ]
+    },
+    {
+      "name": "ComplexFixture",
+      "tests": 13,
+      "testsuite": [
+        {
+          "name": "defoult_constructor",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 7
+        },
+        {
+          "name": "definite_constructor",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 17
+        },
+        {
+          "name": "copy_constructor",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 27
+        },
+        {
+          "name": "move_constructor",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 37
+        },
+        {
+          "name": "copy_operator",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 47
+        },
+        {
+          "name": "move_operator",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 59
+        },
+        {
+          "name": "plus_operator",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 70
+        },
+        {
+          "name": "minus_operator",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 82
+        },
+        {
+          "name": "multiplication_operator",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 94
+        },
+        {
+          "name": "addition_with_assignment_operator",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 106
+        },
+        {
+          "name": "subtraction_with_assignment_operator",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 117
+        },
+        {
+          "name": "multiplication_with_assignment_operator",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 128
+        },
+        {
+          "name": "equal_operator",
+          "file": "C:\\Projects\\lab2.3\\tests\\test_complex.cpp",
+          "line": 139
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,2 @@
+C:\w64devkit\bin\ar.exe qc libproject_core.a CMakeFiles/project_core.dir/srcs/complex.cpp.obj
+C:\w64devkit\bin\ranlib.exe libproject_core.a
