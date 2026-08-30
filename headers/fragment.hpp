@@ -3,7 +3,6 @@
 #include "sequence.hpp"
 #include "exceptions.h"
 #include "arraysequence.hpp"
-#include "bitsequence.hpp"
 #include "listsequence.hpp"
 #include <string>
 #include <sstream>
@@ -72,9 +71,9 @@ public:
 
 template <typename T>
 Fragment<T>::Fragment(double beg, double en, Sequence<T>* coefs) {
-    if (!coefs) throw LogicErrorException("Nullptr in argument");
+    if (!coefs) throw LogicErrorException("Нулевой указатель в аргументе");
     if (beg >= en) {
-        throw LogicErrorException("Begin must be less than end");
+        throw LogicErrorException("Начало отрезка должно быть меньше конца");
     }
     begin = beg;
     end = en;
@@ -155,7 +154,7 @@ bool Fragment<T>::isIntersecting(const Fragment<T>& other) const {
 template <typename T>
 void Fragment<T>::Pruning(double newBeg, double newEnd) {
     if (newBeg >= newEnd) {
-        throw LogicErrorException("Begin must be less than end");
+        throw LogicErrorException("Начало отрезка должно быть меньше конца");
     }
     end = newEnd;
     begin = newBeg;
@@ -163,7 +162,7 @@ void Fragment<T>::Pruning(double newBeg, double newEnd) {
 
 template <typename T>
 void Fragment<T>::Redefinition(Sequence<T>* newCoeffs) {
-    if (!newCoeffs) throw LogicErrorException("Nullptr in argument");
+    if (!newCoeffs) throw LogicErrorException("Нулевой указатель в аргументе");
     Sequence<T>* newClone = newCoeffs->EmptyClone();
     try {
         for (auto item : *newCoeffs) newClone->Append(item);

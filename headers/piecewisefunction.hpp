@@ -3,7 +3,6 @@
 #include "sequence.hpp"
 #include "exceptions.h"
 #include "arraysequence.hpp"
-#include "bitsequence.hpp"
 #include "listsequence.hpp"
 #include <cstddef>
 #include "complex.hpp"
@@ -49,7 +48,7 @@ PieceWiseFunction<T, Container>::PieceWiseFunction()
 
 template <typename T, template <typename> class Container>
 void PieceWiseFunction<T, Container>::FurtherSpecification(const Fragment<T>& frag) {
-    if (!fragments) throw LogicErrorException("Container not initialized");
+    if (!fragments) throw LogicErrorException("Контейнер не инициализирован");
     std::unique_ptr<Sequence<Fragment<T>>> newSeq(fragments->EmptyClone());
     bool inserted = false;
     for (const auto& item : *fragments) {
@@ -94,7 +93,7 @@ void PieceWiseFunction<T, Container>::FurtherSpecification(const Fragment<T>& fr
 template <typename T, template <typename> class Container>
 bool PieceWiseFunction<T, Container>::IsMonotonic() const {
     if constexpr (std::is_same_v<T, Complex>) {
-        throw LogicErrorException("IsMonotonic is not defined for Complex");
+        throw LogicErrorException("IsMonotonic не определён для типа Complex");
     } else {
         if (fragments->GetLength() == 0) return true;
         bool increasing = false;
@@ -188,7 +187,7 @@ auto PieceWiseFunction<T, Container>::Estimation(double point) const {
         if (frag.IsInteriorPoint(point)) 
             return frag.Estimation(point);
     }
-    throw LogicErrorException("The function is not defined at this point");
+    throw LogicErrorException("Функция не определена в этой точке");
 }
 
 template <typename T, template <typename> class Container>

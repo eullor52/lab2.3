@@ -88,21 +88,21 @@ ArraySequence<T>::~ArraySequence() {
 template <typename T>
 T ArraySequence<T>::GetFirst() const {
     if (array->GetSize() == 0)
-        throw OutOfRangeException("GetFirst on empty ArraySequence");
+        throw OutOfRangeException("Вызов GetFirst для пустой ArraySequence");
     return array->Get(0);
 }
 
 template <typename T>
 T ArraySequence<T>::GetLast() const {
     if (array->GetSize() == 0)
-        throw OutOfRangeException("GetLast on empty ArraySequence");
+        throw OutOfRangeException("Вызов GetLast для пустой ArraySequence");
     return array->Get(array->GetSize() - 1);
 }
 
 template <typename T>
 T ArraySequence<T>::Get(size_t index) const {
     if (index >= array->GetSize())
-        throw OutOfRangeException("Index out of range in ArraySequence::Get");
+        throw OutOfRangeException("Индекс вне диапазона в ArraySequence::Get");
     return array->Get(index);
 }
 
@@ -141,7 +141,7 @@ template <typename T>
 void ArraySequence<T>::InsertAtInternal(T item, size_t index) {
     size_t len = array->GetSize();
     if (index > len)
-        throw OutOfRangeException("InsertAtInternal: index out of range");
+        throw OutOfRangeException("InsertAtInternal: индекс вне диапазона");
     size_t newSize = len + 1;
     array->Resize(newSize);
     for (size_t i = newSize - 1; i > index; --i)
@@ -174,7 +174,7 @@ template <typename T>
 Sequence<T>* ArraySequence<T>::GetSubsequence(size_t startIndex, size_t endIndex) const {
     size_t len = array->GetSize();
     if (startIndex > endIndex || startIndex >= len || endIndex > len)
-        throw OutOfRangeException("GetSubsequence: invalid indices");
+        throw OutOfRangeException("GetSubsequence: некорректные индексы");
     size_t newSize = endIndex - startIndex;
     ArraySequence<T>* result = this->EmptyClone();
     result->array->Resize(newSize);

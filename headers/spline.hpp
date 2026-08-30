@@ -56,11 +56,11 @@ PieceWiseFunction<T, Container> CubicSplineInterpolationImpl(const SplineNode<T>
     static_assert(std::is_same_v<T, double> || std::is_same_v<T, Complex>,
                   "Cubic spline interpolation supports only double and Complex ordinates");
 
-    if (!points) throw LogicErrorException("Nullptr in argument");
-    if (n < 2) throw LogicErrorException("At least 2 points are required for spline interpolation");
+    if (!points) throw LogicErrorException("Нулевой указатель в аргументе");
+    if (n < 2) throw LogicErrorException("Для сплайн-интерполяции требуется не менее 2 точек");
     for (size_t i = 0; i + 1 < n; ++i) {
         if (points[i].x >= points[i + 1].x) {
-            throw LogicErrorException("Points must be strictly increasing by x");
+            throw LogicErrorException("Точки должны быть строго упорядочены по возрастанию x");
         }
     }
     double* h = new double[n - 1];

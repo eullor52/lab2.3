@@ -47,7 +47,7 @@ public:
 template <typename T>
 DynamicArray<T>::DynamicArray(T* items, size_t count) {
     if (count > 0 && !items) {
-        throw InvalidArgumentException("Invalid initialization parameters.");
+        throw InvalidArgumentException("Некорректные параметры инициализации.");
     }
     T* tmp = count ? new T[count] : nullptr;
     try {
@@ -106,7 +106,7 @@ size_t DynamicArray<T>::GetSize() const {
 template <typename T>
 T DynamicArray<T>::Get(size_t index) const {
     if (index >= length) {
-        throw OutOfRangeException("Index out of range.");
+        throw OutOfRangeException("Индекс вне допустимого диапазона.");
     }
     return data[index];
 }
@@ -114,7 +114,7 @@ T DynamicArray<T>::Get(size_t index) const {
 template <typename T>
 void DynamicArray<T>::Set(size_t index, T value) {
     if (index >= length) {
-        throw OutOfRangeException("Index out of range.");
+        throw OutOfRangeException("Индекс вне допустимого диапазона.");
     }
     data[index] = value;
 }

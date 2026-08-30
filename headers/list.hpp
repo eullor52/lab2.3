@@ -58,7 +58,7 @@ public:
 template <typename T>
 LinkedList<T>::LinkedList(T* items, size_t count) : head(nullptr), tail(nullptr) {
     if (count == 0) return;
-    if (!items) throw InvalidArgumentException("Items pointer cannot be null");
+    if (!items) throw InvalidArgumentException("Указатель на элементы не может быть нулевым");
     try {
         for (size_t i = 0; i < count; ++i) {
             Append(items[i]);
@@ -112,13 +112,13 @@ LinkedList<T>& LinkedList<T>::operator=(const LinkedList<T>& other) {
 
 template <typename T>
 T LinkedList<T>::GetFirst() const {
-    if (!head) throw OutOfRangeException("List is empty");
+    if (!head) throw OutOfRangeException("Список пуст");
     return head->value;
 }
 
 template <typename T>
 T LinkedList<T>::GetLast() const {
-    if (!tail) throw OutOfRangeException("List is empty");
+    if (!tail) throw OutOfRangeException("Список пуст");
     return tail->value;
 }
 
@@ -130,7 +130,7 @@ T LinkedList<T>::Get(size_t index) const {
         current = current->next;
         ++i;
     }
-    if (!current) throw OutOfRangeException("Index out of range");
+    if (!current) throw OutOfRangeException("Индекс вне диапазона");
     return current->value;
 }
 
@@ -187,7 +187,7 @@ void LinkedList<T>::InsertAt(T item, size_t index) {
     }
     
     if (!current) {
-        throw OutOfRangeException("Index out of range");
+        throw OutOfRangeException("Индекс вне диапазона");
     }
     
     elem* newElem = new elem{current->prev, std::move(item), current};
@@ -204,10 +204,10 @@ LinkedList<T> LinkedList<T>::GetSubList(size_t startIndex, size_t endIndex) cons
         if (startIndex == 0 && endIndex == 0)
             return LinkedList<T>();
         else
-            throw OutOfRangeException("Invalid sublist indices");
+            throw OutOfRangeException("Некорректные индексы подсписка");
     }
     if (startIndex > endIndex || endIndex >= len)
-        throw OutOfRangeException("Invalid sublist indices");
+        throw OutOfRangeException("Некорректные индексы подсписка");
     LinkedList<T> result;
     elem* current = head;
     size_t i = 0;
@@ -259,4 +259,4 @@ typename LinkedList<T>::Iterator LinkedList<T>::begin() const {
 template <typename T>
 typename LinkedList<T>::Iterator LinkedList<T>::end() const {
     return Iterator(nullptr);
-} 
+}
