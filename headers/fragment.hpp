@@ -1,10 +1,12 @@
 #pragma once
 #include "complex.hpp"
-#include "c:/projects/lab-2/headers/sequence.hpp"
-#include "c:/projects/lab-2/headers/exceptions.h"
-#include "c:/projects/lab-2/headers/arraysequence.hpp"
-#include "c:/projects/lab-2/headers/bitsequence.hpp"
-#include "c:/projects/lab-2/headers/listsequence.hpp"
+#include "sequence.hpp"
+#include "exceptions.h"
+#include "arraysequence.hpp"
+#include "bitsequence.hpp"
+#include "listsequence.hpp"
+#include <string>
+#include <sstream>
 
 template <template <typename> class Container>
 struct is_correct_sequence : std::true_type {};
@@ -19,6 +21,17 @@ inline double power(double base, unsigned int deg) {
     double result = 1.0;
     for (unsigned int i = 0; i < deg; ++i) result *= base;
     return result;
+}
+
+template <typename T>
+inline std::string FormatValue(const T& value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+inline std::string FormatValue(const Complex& value) {
+    return value.toString();
 }
 
 template <typename T>
@@ -37,8 +50,8 @@ public:
     Fragment(double beg, double en, Sequence<T>* coef);
     ~Fragment();
 
-    double GetBegin();
-    double GetEnd();
+    double GetBegin() const;
+    double GetEnd() const;
 
     bool isIntersecting(const Fragment<T>& other) const;
 
@@ -50,9 +63,11 @@ public:
     void Redefinition(Sequence<T>* newCoeffs);
     bool IsInteriorPoint(double point) const;
 
-    auto Estimation(double point);
+    auto Estimation(double point) const;
 
-    auto DerivativeAt(double point);
+    auto DerivativeAt(double point) const;
+
+    std::string toString() const;
 };
 
 template <typename T>
@@ -97,10 +112,10 @@ Fragment<T>::Fragment(const Fragment<T>& other) {
 }
 
 template <typename T>
-double Fragment<T>::GetBegin() {return begin;}
+double Fragment<T>::GetBegin() const {return begin;}
 
 template <typename T>
-double Fragment<T>::GetEnd() {return end;}
+double Fragment<T>::GetEnd() const {return end;}
 
 template <typename T>
 Fragment<T>& Fragment<T>::operator=(const Fragment<T>& other) {
@@ -127,8 +142,14 @@ Fragment<T>& Fragment<T>::operator=(const Fragment<T>& other) {
 
 template <typename T>
 bool Fragment<T>::isIntersecting(const Fragment<T>& other) const {
-    return this->IsInteriorPoint(other.end) || this->IsInteriorPoint(other.begin) 
-        || other.IsInteriorPoint(begin) || other.IsInteriorPoint(end);
+    return this->IsInteriorPoint(other.end) && other.end != begin 
+        && other.end != end 
+        || this->IsInteriorPoint(other.begin) && other.begin != begin 
+        && other.begin != end
+        || other.IsInteriorPoint(begin) && other.begin != begin 
+        && other.end != begin
+        || other.IsInteriorPoint(end) && other.begin != end
+        && other.end != end;
 }
 
 template <typename T>
@@ -156,11 +177,11 @@ void Fragment<T>::Redefinition(Sequence<T>* newCoeffs) {
 
 template <typename T>
 bool Fragment<T>::IsInteriorPoint(double point) const {
-    return point > begin && point < end;
+    return point >= begin && point <= end;
 }
 
 template <>
-inline auto Fragment<int>::Estimation(double point) {
+inline auto Fragment<int>::Estimation(double point)  const {
     double result = 0.0;
     if (!coeffs) return result;
     for (size_t i = 0; i < coeffs->GetLength(); ++i) {
@@ -172,7 +193,7 @@ inline auto Fragment<int>::Estimation(double point) {
 
 
 template <>
-inline auto Fragment<double>::Estimation(double point) {
+inline auto Fragment<double>::Estimation(double point) const {
     double result = 0.0;
     if (!coeffs) return result;
     for (size_t i = 0; i < coeffs->GetLength(); ++i) {
@@ -182,7 +203,7 @@ inline auto Fragment<double>::Estimation(double point) {
 }
 
 template <>
-inline auto Fragment<Complex>::Estimation(double point) {
+inline auto Fragment<Complex>::Estimation(double point) const {
     Complex result;
     if (!coeffs) return result;
     for (size_t i = 0; i < coeffs->GetLength(); ++i) {
@@ -194,7 +215,7 @@ inline auto Fragment<Complex>::Estimation(double point) {
 }
 
 template <>
-inline auto Fragment<int>::DerivativeAt(double point) {
+inline auto Fragment<int>::DerivativeAt(double point) const {
     double result = 0.0;
     if (!coeffs) return result;
     for (size_t i = 1; i < coeffs->GetLength(); ++i) {
@@ -205,7 +226,7 @@ inline auto Fragment<int>::DerivativeAt(double point) {
 }
 
 template <>
-inline auto Fragment<double>::DerivativeAt(double point) {
+inline auto Fragment<double>::DerivativeAt(double point) const {
     double result = 0.0;
     if (!coeffs) return result;
     for (size_t i = 1; i < coeffs->GetLength(); ++i) {
@@ -215,7 +236,7 @@ inline auto Fragment<double>::DerivativeAt(double point) {
 }
 
 template <>
-inline auto Fragment<Complex>::DerivativeAt(double point) {
+inline auto Fragment<Complex>::DerivativeAt(double point) const {
     Complex result;
     if (!coeffs) return result;
     for (size_t i = 1; i < coeffs->GetLength(); ++i) {
@@ -224,4 +245,34 @@ inline auto Fragment<Complex>::DerivativeAt(double point) {
         result += coef * factor;
     }
     return result;
+}
+
+template <typename T>
+std::string Fragment<T>::toString() const {
+    std::ostringstream oss;
+    oss << "[" << begin << ", " << end << "]: ";
+
+    if (!coeffs || coeffs->GetLength() == 0) {
+        oss << "0";
+        return oss.str();
+    }
+
+    bool first = true;
+    for (size_t i = 0; i < coeffs->GetLength(); ++i) {
+        T coef = coeffs->Get(i);
+        if (coef == T()) continue;
+
+        if (!first) oss << " + ";
+        if (i == 0) {
+            oss << FormatValue(coef);
+        } else if (i == 1) {
+            oss << FormatValue(coef) << "*x";
+        } else {
+            oss << FormatValue(coef) << "*x^" << i;
+        }
+        first = false;
+    }
+
+    if (first) oss << "0";
+    return oss.str();
 }

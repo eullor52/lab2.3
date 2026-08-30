@@ -1,14 +1,16 @@
 #pragma once
 
-#include "c:/projects/lab-2/headers/sequence.hpp"
-#include "c:/projects/lab-2/headers/exceptions.h"
-#include "c:/projects/lab-2/headers/arraysequence.hpp"
-#include "c:/projects/lab-2/headers/bitsequence.hpp"
-#include "c:/projects/lab-2/headers/listsequence.hpp"
+#include "sequence.hpp"
+#include "exceptions.h"
+#include "arraysequence.hpp"
+#include "bitsequence.hpp"
+#include "listsequence.hpp"
 #include <cstddef>
 #include "complex.hpp"
 #include "fragment.hpp"
 #include <memory>
+#include <string>
+#include <sstream>
 
 using std::abs;
 
@@ -33,6 +35,12 @@ public:
     void FurtherSpecification(const Fragment<T>& frag);
     bool IsMonotonic() const;
     bool IsContinuous() const;
+    Fragment<T> GetFragment(size_t index) const;
+    size_t CountFragments() const;
+
+    auto Estimation(double point) const;
+
+    std::string toString() const;
 };
 
 template <typename T, template <typename> class Container>
@@ -162,4 +170,38 @@ bool PieceWiseFunction<T, Container>::IsContinuous() const {
         prev = *it;
     }
     return true;
+}
+
+template <typename T, template <typename> class Container>
+size_t PieceWiseFunction<T, Container>::CountFragments() const {
+    return fragments->GetLength();
+}
+
+template <typename T, template <typename> class Container>
+Fragment<T> PieceWiseFunction<T, Container>::GetFragment(size_t index) const {
+    return fragments->Get(index);
+}
+
+template <typename T, template <typename> class Container>
+auto PieceWiseFunction<T, Container>::Estimation(double point) const {
+    for (const auto& frag : *fragments) {
+        if (frag.IsInteriorPoint(point)) 
+            return frag.Estimation(point);
+    }
+    throw LogicErrorException("The function is not defined at this point");
+}
+
+template <typename T, template <typename> class Container>
+std::string PieceWiseFunction<T, Container>::toString() const {
+    if (!fragments || fragments->GetLength() == 0) {
+        return "Function is not defined (no fragments).";
+    }
+    std::ostringstream oss;
+    bool first = true;
+    for (const auto& frag : *fragments) {
+        if (!first) oss << "\n";
+        oss << frag.toString();
+        first = false;
+    }
+    return oss.str();
 }

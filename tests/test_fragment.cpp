@@ -1,299 +1,517 @@
-#include <gtest/gtest.h>
+#include "../headers/fragment.hpp"
+#include "../headers/arraysequence.hpp"
+#include "../headers/exceptions.h"
 #include "fixtures.hpp"
-#include "../headers/piecewisefunction.hpp"
-#include "../headers/complex.hpp"
+#include <iostream>
 
 using std::cerr;
 
-// ========== Дополнительные фикстуры для double и Complex ==========
-
-class FragmentFixture : public testing::Test {
-protected:
-    Complex arr_complex[3] = {Complex(1,0), Complex(0,1), Complex(2,2)};
-    MutableArraySequence<Complex>* coeffs_complex;
-    Fragment<Complex>* frag_complex;
-    double begin_complex = 0.0;
-    double end_complex = 1.5;
-    double arr_double[4] = {1.5, -2.0, 3.5, 0.5};
-    MutableArraySequence<double>* coeffs_double;
-    Fragment<double>* frag_double;
-    double begin_double = -1.0;
-    double end_double = 2.0;
-
-    void SetUp() override {
-        coeffs_double = new MutableArraySequence<double>(arr_double, 4);
-        frag_double = new Fragment<double>(begin_double, end_double, coeffs_double);
-        coeffs_complex = new MutableArraySequence<Complex>(arr_complex, 3);
-        frag_complex = new Fragment<Complex>(begin_complex, end_complex, coeffs_complex);
+TEST_F(FragmentFixture, constructor_valid) {
+    EXPECT_TRUE(frag->GetBegin() == begin && frag->GetEnd() == end);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем конструктор с параметрами\n";
+        cerr << "Ожидаемый отрезок: [1, 2]\n";
+        cerr << "Полученный отрезок: [" << frag->GetBegin() << ", " << frag->GetEnd() << "]\n";
     }
+}
 
-    void TearDown() override {
-        delete frag_double;
-        delete coeffs_double;
-        delete frag_complex;
-        delete coeffs_complex;
+TEST_F(FragmentFixture, constructor_nullptr_throws) {
+    bool thrown = false;
+    try {
+        Fragment<int> bad(begin, end, nullptr);
+    } catch (const LogicErrorException&) {
+        thrown = true;
     }
-};
+    EXPECT_TRUE(thrown);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем конструктор с nullptr вместо коэффициентов\n";
+        cerr << "Ожидаемое поведение: выброс LogicErrorException\n";
+        cerr << "Полученное поведение: исключение " 
+            << (thrown ? "выброшено" : "не выброшено") << "\n";
+    }
+}
 
-// ========== Тесты для Fragment<int> (используется FragmentFixture) ==========
+TEST_F(FragmentFixture, constructor_begin_greater_than_end_throws) {
+    bool thrown = false;
+    try {
+        Fragment<int> bad(end, begin, coeffsInt);
+    } catch (const LogicErrorException&) {
+        thrown = true;
+    }
+    EXPECT_TRUE(thrown);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем конструктор при begin > end\n";
+        cerr << "Ожидаемое поведение: выброс LogicErrorException\n";
+        cerr << "Полученное поведение: исключение " 
+            << (thrown ? "выброшено" : "не выброшено") << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, constructor_begin_equal_end_throws) {
+    bool thrown = false;
+    try {
+        Fragment<int> bad(begin, begin, coeffsInt);
+    } catch (const LogicErrorException&) {
+        thrown = true;
+    }
+    EXPECT_TRUE(thrown);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем конструктор при begin == end\n";
+        cerr << "Ожидаемое поведение: выброс LogicErrorException\n";
+        cerr << "Полученное поведение: исключение " 
+            << (thrown ? "выброшено" : "не выброшено") << "\n";
+    }
+}
 
 TEST_F(FragmentFixture, default_constructor) {
-    Fragment<int> def_frag;
-    EXPECT_EQ(def_frag.GetBegin(), 0);
-    EXPECT_EQ(def_frag.GetEnd(), 0);
+    Fragment<int> empty;
+    EXPECT_TRUE(empty.GetBegin() == 0 && empty.GetEnd() == 0);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем конструктор по умолчанию\n";
-        cerr << "Ожидаемое значение begin: 0\n";
-        cerr << "Полученное значение begin: " << def_frag.GetBegin() << "\n";
-        cerr << "Ожидаемое значение end: 0\n";
-        cerr << "Полученное значение end: " << def_frag.GetEnd() << "\n";
+        cerr << "\nТестируем конструктор по умолчанию\n";
+        cerr << "Ожидаемый отрезок: [0, 0]\n";
+        cerr << "Полученный отрезок: [" << empty.GetBegin() << ", " << empty.GetEnd() << "]\n";
     }
 }
 
-TEST_F(FragmentFixture, parameters_constructor) {
-    EXPECT_EQ(frag_double->GetBegin(), begin_double);
-    EXPECT_EQ(frag_double->GetEnd(), end_double);
+TEST_F(FragmentFixture, get_begin) {
+    EXPECT_TRUE(frag->GetBegin() == 1);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем конструктор с параметрами\n";
-        cerr << "Ожидаемое значение begin: " << begin_double << "\n";
-        cerr << "Полученное значение begin: " << frag_double->GetBegin() << "\n";
-        cerr << "Ожидаемое значение end: " << end_double << "\n";
-        cerr << "Полученное значение end: " << frag_double->GetEnd() << "\n";
+        cerr << "\nТестируем метод GetBegin\n";
+        cerr << "Ожидаемое значение: 1\n";
+        cerr << "Полученное значение: " << frag->GetBegin() << "\n";
     }
 }
 
-TEST_F(FragmentFixture, get_end_begin) {
-    EXPECT_EQ(frag_double->GetBegin(), begin_double);
-    EXPECT_EQ(frag_double->GetEnd(), end_double);
+TEST_F(FragmentFixture, get_end) {
+    EXPECT_TRUE(frag->GetEnd() == 2);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем GetEnd/GetBegin\n";
-        cerr << "Ожидаемое значение begin: " << begin_double << "\n";
-        cerr << "Полученное значение begin: " << frag_double->GetBegin() << "\n";
-        cerr << "Ожидаемое значение end: " << end_double << "\n";
-        cerr << "Полученное значение end: " << frag_double->GetEnd() << "\n";
+        cerr << "\nТестируем метод GetEnd\n";
+        cerr << "Ожидаемое значение: 2\n";
+        cerr << "Полученное значение: " << frag->GetEnd() << "\n";
     }
 }
 
-TEST_F(FragmentFixture, copy_constructor) {
-    Fragment<double> copy(*frag_double);
-    EXPECT_EQ(copy.GetBegin(), frag_double->GetBegin());
-    EXPECT_EQ(copy.GetEnd(), frag->GetEnd());
-    EXPECT_DOUBLE_EQ(copy.Estimation(1.5), frag_double->Estimation(1.5));
+TEST_F(FragmentFixture, copy_constructor_deep_copy) {
+    Fragment<int> copy(*frag);
+    EXPECT_TRUE(copy.GetBegin() == frag->GetBegin()
+        && copy.GetEnd() == frag->GetEnd()
+        && copy.Estimation(1) == frag->Estimation(1));
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем конструктор копирования\n";
-        cerr << "Ожидалемое значение begin: " << begin_double << "\n";
-        cerr << "Ожидаемое значение end: " << end_double << "\n";
-        cerr << "Полученое значение begin: " << copy.GetBegin()  << "\n";
-        cerr << "Полученное значение end: " << copy.GetEnd() << "\n";
+        cerr << "\nТестируем конструктор копирования (непустые коэффициенты)\n";
+        cerr << "Ожидаемый отрезок: [" << frag->GetBegin() << ", " << frag->GetEnd() << "]\n";
+        cerr << "Полученный отрезок: [" << copy.GetBegin() << ", " << copy.GetEnd() << "]\n";
     }
 }
 
-TEST_F(FragmentFixture, assignment_operator) {
-    Fragment<double> other;
-    other = *frag_double;
-    EXPECT_EQ(other.GetBegin(), frag_double->GetBegin());
-    EXPECT_EQ(other.GetEnd(), frag_double->GetEnd());
-    EXPECT_DOUBLE_EQ(other.Estimation(2.0), frag_double->Estimation(2.0));
+TEST_F(FragmentFixture, copy_constructor_independent_from_original) {
+    Fragment<int> copy(*frag);
+    copy.Pruning(5, 10);
+    EXPECT_TRUE(copy.GetBegin() == 5 && frag->GetBegin() == 1);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем оператор присваивания\n";
-        cerr << "Ожидалемое значение begin: " << begin_double << "\n";
-        cerr << "Ожидаемое значение end: " << end_double << "\n";
-        cerr << "Полученое значение begin: " << other.GetBegin()  << "\n";
-        cerr << "Полученное значение end: " << other.GetEnd() << "\n";
+        cerr << "\nТестируем независимость копии от оригинала после конструктора копирования\n";
+        cerr << "Ожидаемые начала отрезков: копия 5, оригинал 1\n";
+        cerr << "Полученные начала отрезков: копия " 
+            << copy.GetBegin() << ", оригинал " << frag->GetBegin() << "\n";
     }
 }
 
-TEST_F(FragmentFixture, isIntersecting_true_overlap) {
-    Fragment<int> other(2.0, 3.0, coeffs);
-    EXPECT_TRUE(frag->isIntersecting(other));
+TEST_F(FragmentFixture, copy_constructor_from_empty) {
+    Fragment<int> empty;
+    Fragment<int> copy(empty);
+    EXPECT_TRUE(copy.GetBegin() == 0 && copy.GetEnd() == 0 && copy.Estimation(1) == 0);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем isIntersecting для пересекающихся интервалов [1,2] и [2,3]\n";
-        cerr << "Ожидалось true\n";
-        cerr << "Получено false\n";
+        cerr << "\nТестируем конструктор копирования от "
+            << "фрагмента с пустыми (nullptr) коэффициентами\n";
+        cerr << "Ожидаемый результат Estimation: 0\n";
+        cerr << "Полученный результат: " << copy.Estimation(1) << "\n";
     }
 }
 
-TEST_F(FragmentFixture, isIntersecting_false_disjoint) {
-    Fragment<int> other(3.0, 4.0, coeffs);
-    EXPECT_FALSE(frag->isIntersecting(other));
+TEST_F(FragmentFixture, copy_operator_deep_copy) {
+    Fragment<int> copy;
+    copy = *frag;
+    EXPECT_TRUE(copy.GetBegin() == frag->GetBegin()
+        && copy.GetEnd() == frag->GetEnd()
+        && copy.Estimation(1) == frag->Estimation(1));
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем isIntersecting для непересекающихся интервалов [1,2] и [3,4]\n";
-        cerr << "Ожидалось false\n";
-        cerr << "Получено true\n";
+        cerr << "\nТестируем оператор присваивания копированием\n";
+        cerr << "Ожидаемый отрезок: [" 
+            << frag->GetBegin() << ", " << frag->GetEnd() << "]\n";
+        cerr << "Полученный отрезок: [" 
+            << copy.GetBegin() << ", " << copy.GetEnd() << "]\n";
     }
 }
 
-TEST_F(FragmentFixture, isIntersecting_touch_at_boundary) {
-    Fragment<int> other(2.0, 3.0, coeffs);
-    EXPECT_FALSE(frag->isIntersecting(other));
+TEST_F(FragmentFixture, copy_operator_independent_from_original) {
+    Fragment<int> copy;
+    copy = *frag;
+    copy.Pruning(5, 10);
+    EXPECT_TRUE(copy.GetBegin() == 5 && frag->GetBegin() == 1);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем isIntersecting для касающихся интервалов [1,2] и [2,3]\n";
-        cerr << "Ожидалось false (касание не считается пересечением)\n";
-        cerr << "Получено true\n";
+        cerr << "\nТестируем независимость копии от оригинала после оператора присваивания\n";
+        cerr << "Ожидаемые начала отрезков: копия 5, оригинал 1\n";
+        cerr << "Полученные начала отрезков: копия " 
+            << copy.GetBegin() << ", оригинал " << frag->GetBegin() << "\n";
     }
 }
 
-TEST_F(FragmentFixture, isIntersecting_one_inside_other) {
-    Fragment<int> other(1.25, 1.75, coeffs);
-    EXPECT_TRUE(frag->isIntersecting(other));
+TEST_F(FragmentFixture, copy_operator_from_empty) {
+    Fragment<int> empty;
+    *frag = empty;
+    EXPECT_TRUE(frag->GetBegin() == 0 && frag->GetEnd() == 0 && frag->Estimation(1) == 0);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем isIntersecting, когда один интервал внутри другого\n";
-        cerr << "Ожидалось true\n";
-        cerr << "Получено false\n";
+        cerr << "\nТестируем присваивание фрагмента с пустыми (nullptr) коэффициентами\n";
+        cerr << "Ожидаемый отрезок: [0, 0], Estimation: 0\n";
+        cerr << "Полученный отрезок: [" << frag->GetBegin() << ", " << frag->GetEnd()
+             << "], Estimation: " << frag->Estimation(1) << "\n";
     }
 }
 
-TEST_F(FragmentFixture, pruning_changes_bounds) {
-    frag->Pruning(2.5, 4.5);
-    EXPECT_EQ(frag->GetBegin(), 2.5);
-    EXPECT_EQ(frag->GetEnd(), 4.5);
+TEST_F(FragmentFixture, copy_operator_self_assignment) {
+    double expectedBegin = frag->GetBegin();
+    double expectedEnd = frag->GetEnd();
+    double expectedEstimation = frag->Estimation(1);
+    *frag = *frag;
+    EXPECT_TRUE(frag->GetBegin() == expectedBegin
+        && frag->GetEnd() == expectedEnd
+        && frag->Estimation(1) == expectedEstimation);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем Pruning\n";
-        cerr << "Ожидались новые границы 2.5 и 4.5\n";
-        cerr << "Получено: begin = " << frag->GetBegin() 
-            << ", end = " << frag->GetEnd() << "\n";
+        cerr << "\nТестируем присваивание фрагмента самому себе\n";
+        cerr << "Ожидаемый отрезок: [" 
+            << expectedBegin << ", " << expectedEnd << "]\n";
+        cerr << "Полученный отрезок: [" 
+            << frag->GetBegin() << ", " << frag->GetEnd() << "]\n";
     }
 }
 
-TEST_F(FragmentFixture, pruning_throws_on_invalid_bounds) {
-    EXPECT_THROW(frag->Pruning(3.0, 2.0), LogicErrorException);
+TEST_F(FragmentFixture, is_interior_point_inside) {
+    bool result = frag->IsInteriorPoint(1.5);
+    EXPECT_TRUE(result);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем Pruning с некорректными границами (newBeg >= newEnd)\n";
-        cerr << "Ожидалось исключение LogicErrorException\n";
-        cerr << "Исключение не было выброшено\n";
+        cerr << "\nТестируем метод IsInteriorPoint для точки внутри отрезка\n";
+        cerr << "Точка: 1.5, отрезок: [1, 2]\n";
+        cerr << "Ожидаемый результат: 1\n";
+        cerr << "Полученный результат: " << result << "\n";
     }
 }
 
-TEST_F(FragmentFixture, redefinition_replaces_coefficients) {
-    int newArr[3] = {5, 6, 7};
-    MutableArraySequence<int>* newCoeffs = new MutableArraySequence<int>(newArr, 3);
-    frag->Redefinition(newCoeffs);
-    EXPECT_DOUBLE_EQ(frag->Estimation(1.0), 18.0);
-    delete newCoeffs;
+TEST_F(FragmentFixture, is_interior_point_on_begin_border) {
+    bool result = frag->IsInteriorPoint(1);
+    EXPECT_TRUE(result);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем Redefinition\n";
-        cerr << "Ожидалось новое значение полинома 18.0 при point=1\n";
-        cerr << "Получено: " << frag->Estimation(1.0) << "\n";
+        cerr << "\nТестируем метод IsInteriorPoint для точки на левой границе\n";
+        cerr << "Точка: 1, отрезок: [1, 2]\n";
+        cerr << "Ожидаемый результат: 1\n";
+        cerr << "Полученный результат: " << result << "\n";
     }
 }
 
-TEST_F(FragmentFixture, redefinition_throws_on_null) {
-    EXPECT_THROW(frag->Redefinition(nullptr), LogicErrorException);
+TEST_F(FragmentFixture, is_interior_point_on_end_border) {
+    bool result = frag->IsInteriorPoint(2);
+    EXPECT_TRUE(result);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем Redefinition с nullptr\n";
-        cerr << "Ожидалось исключение LogicErrorException\n";
-        cerr << "Исключение не было выброшено\n";
+        cerr << "\nТестируем метод IsInteriorPoint для точки на правой границе\n";
+        cerr << "Точка: 2, отрезок: [1, 2]\n";
+        cerr << "Ожидаемый результат: 1\n";
+        cerr << "Полученный результат: " << result << "\n";
     }
 }
 
-TEST_F(FragmentFixture, is_interior_point_true) {
-    EXPECT_TRUE(frag->IsInteriorPoint(1.5));
+TEST_F(FragmentFixture, is_interior_point_outside) {
+    bool result = frag->IsInteriorPoint(10);
+    EXPECT_TRUE(!result);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем IsInteriorPoint для точки внутри интервала\n";
-        cerr << "Ожидалось true\n";
-        cerr << "Получено false\n";
+        cerr << "\nТестируем метод IsInteriorPoint для точки далеко за пределами отрезка\n";
+        cerr << "Точка: 10, отрезок: [1, 2]\n";
+        cerr << "Ожидаемый результат: 0\n";
+        cerr << "Полученный результат: " << result << "\n";
     }
 }
 
-TEST_F(FragmentFixture, is_interior_point_false_on_boundary) {
-    EXPECT_FALSE(frag->IsInteriorPoint(begin));
-    EXPECT_FALSE(frag->IsInteriorPoint(end));
+TEST_F(FragmentFixture, is_intersecting_true) {
+    int arr2[2] = {5, 6};
+    MutableArraySequence<int> otherCoeffs(arr2, 2);
+    Fragment<int> other(1.5, 3, &otherCoeffs);
+    bool result = frag->isIntersecting(other);
+    EXPECT_TRUE(result);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем IsInteriorPoint для граничных точек\n";
-        cerr << "Ожидалось false для begin и end\n";
-        cerr << "Получено: begin = " << frag->IsInteriorPoint(begin) 
-            << ", end = " << frag->IsInteriorPoint(end) << "\n";
+        cerr << "\nТестируем метод isIntersecting для пересекающихся отрезков\n";
+        cerr << "Первый отрезок: [1, 2], второй отрезок: [1.5, 3]\n";
+        cerr << "Ожидаемый результат: 1\n";
+        cerr << "Полученный результат: " << result << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, is_intersecting_false) {
+    int arr2[2] = {5, 6};
+    MutableArraySequence<int> otherCoeffs(arr2, 2);
+    Fragment<int> other(3, 4, &otherCoeffs);
+    bool result = frag->isIntersecting(other);
+    EXPECT_TRUE(!result);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод isIntersecting для непересекающихся отрезков\n";
+        cerr << "Первый отрезок: [1, 2], второй отрезок: [3, 4]\n";
+        cerr << "Ожидаемый результат: 0\n";
+        cerr << "Полученный результат: " << result << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, is_intersecting_touching_border_false) {
+    int arr2[2] = {5, 6};
+    MutableArraySequence<int> otherCoeffs(arr2, 2);
+    Fragment<int> other(2, 3, &otherCoeffs);
+    bool result = frag->isIntersecting(other);
+    EXPECT_TRUE(!result);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод isIntersecting для отрезков, соприкасающихся границей\n";
+        cerr << "Первый отрезок: [1, 2], второй отрезок: [2, 3]\n";
+        cerr << "Ожидаемый результат: 0 (граница не считается пересечением)\n";
+        cerr << "Полученный результат: " << result << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, is_intersecting_one_inside_another) {
+    int arr2[2] = {5, 6};
+    MutableArraySequence<int> otherCoeffs(arr2, 2);
+    Fragment<int> other(0, 5, &otherCoeffs);
+    bool result = frag->isIntersecting(other);
+    EXPECT_TRUE(result);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод isIntersecting когда один отрезок целиком внутри другого\n";
+        cerr << "Первый отрезок: [1, 2], второй отрезок: [0, 5]\n";
+        cerr << "Ожидаемый результат: 1\n";
+        cerr << "Полученный результат: " << result << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, pruning_valid) {
+    frag->Pruning(0, 5);
+    EXPECT_TRUE(frag->GetBegin() == 0 && frag->GetEnd() == 5);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод Pruning с корректными границами\n";
+        cerr << "Ожидаемый отрезок: [0, 5]\n";
+        cerr << "Полученный отрезок: [" 
+            << frag->GetBegin() << ", " << frag->GetEnd() << "]\n";
+    }
+}
+
+TEST_F(FragmentFixture, pruning_begin_greater_than_end_throws) {
+    bool thrown = false;
+    try {
+        frag->Pruning(5, 0);
+    } catch (const LogicErrorException&) {
+        thrown = true;
+    }
+    EXPECT_TRUE(thrown);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод Pruning при newBegin > newEnd\n";
+        cerr << "Ожидаемое поведение: выброс LogicErrorException\n";
+        cerr << "Полученное поведение: исключение " 
+            << (thrown ? "выброшено" : "не выброшено") << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, pruning_begin_equal_end_throws) {
+    bool thrown = false;
+    try {
+        frag->Pruning(5, 5);
+    } catch (const LogicErrorException&) {
+        thrown = true;
+    }
+    EXPECT_TRUE(thrown);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод Pruning при newBegin == newEnd\n";
+        cerr << "Ожидаемое поведение: выброс LogicErrorException\n";
+        cerr << "Полученное поведение: исключение " 
+            << (thrown ? "выброшено" : "не выброшено") << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, pruning_keeps_old_bounds_after_failed_call) {
+    try {
+        frag->Pruning(5, 5);
+    } catch (const LogicErrorException&) {}
+    EXPECT_TRUE(frag->GetBegin() == 1 && frag->GetEnd() == 2);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем, что после неудачного вызова Pruning границы отрезка не меняются\n";
+        cerr << "Ожидаемый отрезок: [1, 2]\n";
+        cerr << "Полученный отрезок: [" << frag->GetBegin() 
+            << ", " << frag->GetEnd() << "]\n";
+    }
+}
+
+TEST_F(FragmentFixture, redefinition_valid) {
+    int newArr[2] = {5, 6};
+    MutableArraySequence<int> newCoeffs(newArr, 2);
+    frag->Redefinition(&newCoeffs);
+    double result = frag->Estimation(1);
+    EXPECT_TRUE(result == 11);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод Redefinition с новыми коэффициентами\n";
+        cerr << "Новые коэффициенты: 5+6*x, точка: 1\n";
+        cerr << "Ожидаемое значение: 11\n";
+        cerr << "Полученное значение: " << result << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, redefinition_with_empty_sequence) {
+    MutableArraySequence<int> emptyCoeffs;
+    frag->Redefinition(&emptyCoeffs);
+    double result = frag->Estimation(1);
+    EXPECT_TRUE(result == 0);
+    if (testing::Test::HasFailure()) {
+        cerr 
+            << "\nТестируем метод Redefinition с пустой (длины 0) "
+            << "последовательностью коэффициентов\n";
+        cerr << "Ожидаемое значение Estimation: 0\n";
+        cerr << "Полученное значение: " << result << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, redefinition_nullptr_throws) {
+    bool thrown = false;
+    try {
+        frag->Redefinition(nullptr);
+    } catch (const LogicErrorException&) {
+        thrown = true;
+    }
+    EXPECT_TRUE(thrown);
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод Redefinition с nullptr вместо коэффициентов\n";
+        cerr << "Ожидаемое поведение: выброс LogicErrorException\n";
+        cerr << "Полученное поведение: исключение " 
+            << (thrown ? "выброшено" : "не выброшено") << "\n";
     }
 }
 
 TEST_F(FragmentFixture, estimation_int) {
-    EXPECT_DOUBLE_EQ(frag->Estimation(2.0), 1 + 2*2 + 3*4 + 4*8);
-    EXPECT_DOUBLE_EQ(frag->Estimation(0.0), 1.0);
+    double result = frag->Estimation(1);
+    EXPECT_TRUE(result == 10);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем Estimation для int\n";
-        cerr << "Ожидалось значение 49.0 при x=2\n";
-        cerr << "Получено: " << frag->Estimation(2.0) << "\n";
+        cerr << "\nТестируем метод Estimation для Fragment<int>\n";
+        cerr << "Многочлен: 1+2*x+3*x^2+4*x^3, точка: 1\n";
+        cerr << "Ожидаемое значение: 10\n";
+        cerr << "Полученное значение: " << result << "\n";
     }
 }
 
 TEST_F(FragmentFixture, derivative_at_int) {
-    EXPECT_DOUBLE_EQ(frag->DerivativeAt(2.0), 2 + 6*2 + 12*4);
-    EXPECT_DOUBLE_EQ(frag->DerivativeAt(0.0), 2.0);
+    double result = frag->DerivativeAt(1);
+    EXPECT_TRUE(result == 20);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем DerivativeAt для int\n";
-        cerr << "Ожидалось значение 62.0 при x=2\n";
-        cerr << "Получено: " << frag->DerivativeAt(2.0) << "\n";
+        cerr << "\nТестируем метод DerivativeAt для Fragment<int>\n";
+        cerr << "Производная многочлена: 2+6*x+12*x^2, точка: 1\n";
+        cerr << "Ожидаемое значение: 20\n";
+        cerr << "Полученное значение: " << result << "\n";
     }
 }
 
-TEST_F(DoubleFragmentFixture, estimation_double) {
-    double x = 1.0;
-    double expected = 1.5 - 2.0*1 + 3.5*1 + 0.5*1;
-    EXPECT_NEAR(frag->Estimation(x), expected, 1e-9);
+TEST_F(FragmentFixture, estimation_int_on_empty_fragment) {
+    Fragment<int> empty;
+    double result = empty.Estimation(1);
+    EXPECT_TRUE(result == 0);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем Estimation для double\n";
-        cerr << "Ожидалось значение " << expected << " при x=" << x << "\n";
-        cerr << "Получено: " << frag->Estimation(x) << "\n";
+        cerr << "\nТестируем метод Estimation для Fragment<int> с пустыми коэффициентами\n";
+        cerr << "Ожидаемое значение: 0\n";
+        cerr << "Полученное значение: " << result << "\n";
     }
 }
 
-TEST_F(DoubleFragmentFixture, derivative_at_double) {
-    double x = 2.0;
-    double expected = -2 + 7*2 + 1.5*4; // -2+14+6=18
-    EXPECT_NEAR(frag->DerivativeAt(x), expected, 1e-9);
+TEST_F(FragmentFixture, derivative_at_int_on_empty_fragment) {
+    Fragment<int> empty;
+    double result = empty.DerivativeAt(1);
+    EXPECT_TRUE(result == 0);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем DerivativeAt для double\n";
-        cerr << "Ожидалось значение " << expected << " при x=" << x << "\n";
-        cerr << "Получено: " << frag->DerivativeAt(x) << "\n";
+        cerr << "\nТестируем метод DerivativeAt для Fragment<int> с пустыми коэффициентами\n";
+        cerr << "Ожидаемое значение: 0\n";
+        cerr << "Полученное значение: " << result << "\n";
     }
 }
 
-TEST_F(ComplexFragmentFixture, estimation_complex) {
-    double x = 1.0;
-    Complex expected(1 + 0*1 + 2*1, 0 + 1*1 + 2*1); // (3, 3)
-    Complex result = frag->Estimation(x);
-    EXPECT_DOUBLE_EQ(result.GetReal(), expected.GetReal());
-    EXPECT_DOUBLE_EQ(result.GetImag(), expected.GetImag());
+TEST_F(FragmentFixture, estimation_double) {
+    double result = fragDouble->Estimation(1);
+    EXPECT_TRUE(result == 4.0);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем Estimation для Complex\n";
-        cerr << "Ожидалось значение (3,3) при x=1\n";
-        cerr << "Получено: (" << result.GetReal() << ", " << result.GetImag() << ")\n";
+        cerr << "\nТестируем метод Estimation для Fragment<double>\n";
+        cerr << "Многочлен: 1.5+2.0*x+0.5*x^2, точка: 1\n";
+        cerr << "Ожидаемое значение: 4\n";
+        cerr << "Полученное значение: " << result << "\n";
     }
 }
 
-TEST_F(ComplexFragmentFixture, derivative_at_complex) {
-    // Производная: (0+1i) + 2*(2+2i)x = (0+1i) + (4+4i)x
-    double x = 0.5;
-    Complex expected(0 + 4*0.5, 1 + 4*0.5); // (2, 3)
-    Complex result = frag->DerivativeAt(x);
-    EXPECT_DOUBLE_EQ(result.GetReal(), expected.GetReal());
-    EXPECT_DOUBLE_EQ(result.GetImag(), expected.GetImag());
+TEST_F(FragmentFixture, derivative_at_double) {
+    double result = fragDouble->DerivativeAt(1);
+    EXPECT_TRUE(result == 3.0);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем DerivativeAt для Complex\n";
-        cerr << "Ожидалось значение (2,3) при x=0.5\n";
-        cerr << "Получено: (" << result.GetReal() << ", " << result.GetImag() << ")\n";
+        cerr << "\nТестируем метод DerivativeAt для Fragment<double>\n";
+        cerr << "Производная многочлена: 2.0+1.0*x, точка: 1\n";
+        cerr << "Ожидаемое значение: 3\n";
+        cerr << "Полученное значение: " << result << "\n";
     }
 }
 
-
-TEST_F(FragmentConstructorTest, throws_when_beg_ge_end) {
-    int arr[1] = {1};
-    MutableArraySequence<int>* coeffs = new MutableArraySequence<int>(arr, 1);
-    EXPECT_THROW(Fragment<int>(2.0, 1.0, coeffs), LogicErrorException);
-    EXPECT_THROW(Fragment<int>(1.0, 1.0, coeffs), LogicErrorException);
-    delete coeffs;
+TEST_F(FragmentFixture, estimation_double_on_empty_fragment) {
+    Fragment<double> empty;
+    double result = empty.Estimation(1);
+    EXPECT_TRUE(result == 0);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем конструктор Fragment с begin >= end\n";
-        cerr << "Ожидалось исключение LogicErrorException\n";
-        cerr << "Исключение не было выброшено\n";
+        cerr << "\nТестируем метод Estimation для Fragment<double> с пустыми коэффициентами\n";
+        cerr << "Ожидаемое значение: 0\n";
+        cerr << "Полученное значение: " << result << "\n";
     }
 }
 
-TEST_F(FragmentConstructorTest, throws_when_null_sequence) {
-    EXPECT_THROW(Fragment<int>(1.0, 2.0, nullptr), LogicErrorException);
+TEST_F(FragmentFixture, derivative_at_double_on_empty_fragment) {
+    Fragment<double> empty;
+    double result = empty.DerivativeAt(1);
+    EXPECT_TRUE(result == 0);
     if (testing::Test::HasFailure()) {
-        cerr << "Тестируем конструктор Fragment с nullptr последовательностью\n";
-        cerr << "Ожидалось исключение LogicErrorException\n";
-        cerr << "Исключение не было выброшено\n";
+        cerr << "\nТестируем метод DerivativeAt для Fragment<double> с пустыми коэффициентами\n";
+        cerr << "Ожидаемое значение: 0\n";
+        cerr << "Полученное значение: " << result << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, estimation_complex) {
+    Complex result = fragComplex->Estimation(1);
+    EXPECT_TRUE(result == Complex(3, 1));
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод Estimation для Fragment<Complex>\n";
+        cerr << "Многочлен: (1+1i)+(2+0i)*x, точка: 1\n";
+        cerr << "Ожидаемое число: 3+1*i\n";
+        cerr << "Полученное число: " << result.toString() << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, derivative_at_complex) {
+    Complex result = fragComplex->DerivativeAt(1);
+    EXPECT_TRUE(result == Complex(2, 0));
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод DerivativeAt для Fragment<Complex>\n";
+        cerr << "Производная многочлена: (2+0i), точка: 1\n";
+        cerr << "Ожидаемое число: 2+0*i\n";
+        cerr << "Полученное число: " << result.toString() << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, estimation_complex_on_empty_fragment) {
+    Fragment<Complex> empty;
+    Complex result = empty.Estimation(1);
+    EXPECT_TRUE(result == Complex(0, 0));
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод Estimation для Fragment<Complex> с пустыми коэффициентами\n";
+        cerr << "Ожидаемое число: 0+0*i\n";
+        cerr << "Полученное число: " << result.toString() << "\n";
+    }
+}
+
+TEST_F(FragmentFixture, derivative_at_complex_on_empty_fragment) {
+    Fragment<Complex> empty;
+    Complex result = empty.DerivativeAt(1);
+    EXPECT_TRUE(result == Complex(0, 0));
+    if (testing::Test::HasFailure()) {
+        cerr << "\nТестируем метод DerivativeAt для Fragment<Complex> с пустыми коэффициентами\n";
+        cerr << "Ожидаемое число: 0+0*i\n";
+        cerr << "Полученное число: " << result.toString() << "\n";
     }
 }
